@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FenceProUz — Sim To'r Ishlab Chiqarish</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --steel: #1a1f2e;
+    --steel-mid: #242b3d;
+    --steel-light: #2e3850;
+    --gold: #00b0fc;
+    --gold-bright: #00a2ff;
+    --wire: #4a6080;
+    --white: #ffffff;
+    --muted: #8a95a8;
+  }
+
+  /* ─── LIGHT MODE ─── */
+  body.light {
+    --steel: #f0f4fb;
+    --steel-mid: #e2e8f4;
+    --steel-light: #d1dced;
+    --gold: #0077dd;
+    --gold-bright: #005bb5;
+    --wire: #7a92b0;
+    --white: #0d1120;
+    --muted: #4a5a72;
+  }
+
+  body.light nav {
+    background: rgba(240,244,251,0.92);
+    border-bottom-color: rgba(0,119,221,0.18);
+  }
+
+  body.light .contact-form,
+  body.light .about-card,
+  body.light .product-card {
+    background: #fff;
+    border-color: rgba(0,119,221,0.12);
+  }
+
+  body.light .about-num-item {
+    background: #f0f4fb;
+  }
+
+  body.light #meshCanvas { opacity: 0.08; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--steel);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ─── CANVAS BG ─── */
+  #meshCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 60px;
+    background: rgba(26,31,46,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(58, 172, 201, 0.15);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .logo span { color: var(--gold); }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  .nav-cta {
+    background: var(--gold);
+    color: #fff !important;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-weight: 600 !important;
+    transition: background 0.3s !important;
+  }
+
+  .nav-cta:hover { background:  rgb(0, 110, 255) !important; color: #fff !important; }
+
+  /* ─── THEME & LANG CONTROLS ─── */
+  .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .theme-toggle {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid rgba(0,203,253,0.3);
+    background: rgba(255,255,255,0.06);
+    color: var(--gold);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .theme-toggle:hover {
+    background: rgba(0,176,252,0.15);
+    border-color: var(--gold);
+  }
+
+  /* ─── HAMBURGER ─── */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  @media (max-width: 900px) {
+    .hamburger { display: flex; }
+  }
+
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--white);
+    border-radius: 2px;
+    transition: all 0.35s;
+  }
+
+  .hamburger.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+  }
+  .hamburger.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* ─── MOBILE MENU ─── */
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,31,46,0.98);
+    backdrop-filter: blur(20px);
+    z-index: 150;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .mobile-menu.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .mobile-menu a {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    letter-spacing: 3px;
+    color: var(--white);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .mobile-menu a:hover { color: var(--gold); }
+
+  .mobile-menu .m-cta {
+    background: var(--gold);
+    color: var(--steel) !important;
+    padding: 14px 40px;
+    border-radius: 4px;
+    font-size: 32px;
+  }
+
+  /* ─── HERO ─── */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 60px 80px;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .hero-content {
+    max-width: 680px;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeUp 1s 0.3s forwards;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 160, 235, 0.12);
+    border: 1px solid rgba(58, 184, 201, 0.3);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s infinite;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 8vw, 100px);
+    line-height: 0.95;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+  }
+
+  h1 .accent { color: var(--gold); }
+
+  .hero-desc {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 520px;
+    margin-bottom: 40px;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: rgb(0, 110, 255);
+    color: #fff;
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+  }
+
+  .btn-primary:hover {
+    background: rgb(0, 110, 255);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 15px rgba(46, 180, 233, 0.418);
+  }
+
+  .btn-outline {
+    border: 1.5px solid rgba(0, 203, 253, 0.747);
+    color: var(--gold);
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--gold);
+    background: rgba(144, 233, 236, 0.08);
+  }
+
+  .hero-stats {
+    position: absolute;
+    right: 60px;
+    bottom: 80px;
+    display: flex;
+    gap: 48px;
+    opacity: 0;
+    animation: fadeUp 1s 0.8s forwards;
+  }
+
+  .stat-item { text-align: center; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 60px;
+  }
+
+  .section-tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 56px;
+  }
+
+  /* ─── PRODUCTS ─── */
+  #mahsulotlar { background: var(--steel-mid); }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .product-card {
+    background: var(--steel);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.4s;
+    cursor: pointer;
+  }
+
+  .product-card:hover {
+    border-color: rgba(0, 203, 253, 0.747);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px rgba(0,0,0,0.4);
+  }
+
+  .product-visual {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--steel-light);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-visual canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .product-info {
+    padding: 24px;
+  }
+
+  .product-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .product-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .product-specs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .spec-tag {
+    background: rgba(17, 17, 17, 0.233);
+    border: 1px solid rgba(0, 160, 253, 0.747);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  /* ─── ABOUT ─── */
+  #biz-haqimizda {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .about-features {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: rgb(0, 119, 255);
+    border: 1px solid rgba(0, 203, 253, 0.747);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .feature-text h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .feature-text p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .about-visual {
+    position: relative;
+  }
+
+  .about-card {
+    background: var(--steel-mid);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(0, 119, 255, 0.473), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cert-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgb(0, 119, 255);
+    border: 1px solid rgba(0, 160, 253, 0.747);
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 28px;
+    font-weight: 600;
+    color: #ffff;
+    font-size: 14px;
+
+  }
+
+  .about-nums {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .about-num-item {
+    background: var(--steel);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 1;
+
+  }
+
+  .about-num-item .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .about-num-item .lbl {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ─── CONTACT ─── */
+  #aloqa { background: var(--steel-mid); }
+
+  .contact-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .contact-item {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .contact-icon {
+    width: 44px; height: 44px;
+    min-width: 44px;
+    background: rgb(0, 119, 255);
+    border: 1px solid rgba(0, 203, 253, 0.747);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .contact-item h4 { font-size: 13px; color: var(--muted); margin-bottom: 2px; }
+  .contact-item p { font-size: 16px; font-weight: 500; }
+
+  .contact-form {
+    background: var(--steel);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 40px;
+  }
+
+  .form-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: var(--steel-light);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 13px 16px;
+    color: rgb(255, 255, 255);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s;
+    appearance: none;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: rgb(0, 119, 255);
+  }
+
+  .form-group textarea { resize: vertical; min-height: 100px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .btn-submit {
+    width: 100%;
+    background: rgb(0, 119, 255);
+    color: #fff;
+    border: none;
+    padding: 15px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    margin-top: 8px;
+  }
+
+  .btn-submit:hover {
+    background: var(--gold-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 168, 247, 0.171);
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    position: relative;
+    z-index: 1;
+    background: #111520;
+    padding: 40px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .footer-logo span { color: var(--gold); }
+
+  footer p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--gold);
+    margin: 20px 0 40px;
+    border-radius: 2px;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: flex; }
+
+    #hero {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 100px 20px 60px;
+      min-height: 100vh;
+    }
+
+    h1 { font-size: clamp(36px, 10vw, 56px); }
+    .hero-desc { font-size: 15px; }
+
+    .hero-stats {
+      position: static;
+      margin-top: 40px;
+      gap: 20px;
+      flex-wrap: wrap;
+      opacity: 1;
+      animation: none;
+    }
+
+    .stat-num { font-size: 32px; }
+    .stat-label { font-size: 10px; }
+
+    section { padding: 60px 20px; }
+    #biz-haqimizda { grid-template-columns: 1fr; gap: 40px; }
+    .contact-wrapper { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 12px; text-align: center; padding: 30px 20px; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated mesh background -->
+<canvas id="meshCanvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Fence<span>Pro</span>Uz</div>
+  <ul class="nav-links">
+    <li><a href="#mahsulotlar">Mahsulotlar</a></li>
+    <li><a href="#biz-haqimizda">Biz haqimizda</a></li>
+    <li><a href="#aloqa">Aloqa</a></li>
+    <li><a href="#aloqa" class="nav-cta">Buyurtma</a></li>
+  </ul>
+  <div class="nav-controls">
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Kun/Tun rejimi">🌙</button>
+    </div>
+    <!-- Hamburger -->
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#mahsulotlar" onclick="closeMenu()">Mahsulotlar</a>
+  <a href="#biz-haqimizda" onclick="closeMenu()">Biz haqimizda</a>
+  <a href="#aloqa" onclick="closeMenu()">Aloqa</a>
+  <a href="#aloqa" class="m-cta" onclick="closeMenu()">Buyurtma</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">✦ <span>O'zbekistonda ishlab chiqarilgan</span></div>
+    <h1>
+      <span>PROFESSIONAL</span><br>
+      SIM <span class="accent">TO'R</span><br>
+      <span>YECHIMLAR</span>
+    </h1>
+    <p class="hero-desc">
+        Zavoddan to'g'ridan-to'g'ri. Yuqori sifatli sim to'r mahsulotlari — 
+        qurilish, xavfsizlik va sanoat uchun. GOST standartlariga mos.
+      </p>
+      <div class="hero-btns">
+        <a href="#mahsulotlar" class="btn-primary">Mahsulotlarni ko'rish</a>
+        <a href="#aloqa" class="btn-outline">Narx so'rash</a>
+      </div>
+    </div>
+  
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">10+</div>
+        <div class="stat-label">Yillik tajriba</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">500+</div>
+        <div class="stat-label">Mijozlar</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Eksport viloyatlar</div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- PRODUCTS -->
+  <section id="mahsulotlar">
+    <div class="reveal">
+      <div class="section-tag">✦ Katalog</div>
+      <h2 class="section-title">MAHSULOTLAR</h2>
+      <div class="divider"></div>
+      <p class="section-sub">Barcha mahsulotlar zavodimizda GOST standartlariga asosan ishlab chiqariladi.</p>
+    </div>
+  
+    <div class="products-grid reveal">
+  
+      <div class="product-card">
+        <div class="product-visual" id="pv1"></div>
+        <div class="product-info">
+          <div class="product-name">1.20m Balandlikdagi To'r</div>
+          <p class="product-desc">Past balandlikdagi to'r. Bog', dala va kichik to'siqlar uchun qulay.</p>
+          <div class="product-specs">
+            <span class="spec-tag">Sim: 1.5 / 2.0 / 2.3 mm</span>
+          </div>
+          <div class="product-specs" style="margin-top:8px">
+            <span class="spec-tag">10×10</span>
+            <span class="spec-tag">25×25</span>
+            <span class="spec-tag">35×35</span>
+            <span class="spec-tag">45×45</span>
+            <span class="spec-tag">55×55 sm</span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="product-card">
+        <div class="product-visual" id="pv2"></div>
+        <div class="product-info">
+          <div class="product-name">1.50m Balandlikdagi To'r</div>
+          <p class="product-desc">O'rta balandlikdagi to'r. Hovli, korxona va qurilish ob'ektlari uchun eng ko'p ishlatiladigan tur.</p>
+          <div class="product-specs">
+            <span class="spec-tag">Sim: 1.5 / 2.0 / 2.3 mm</span>
+          </div>
+          <div class="product-specs" style="margin-top:8px">
+            <span class="spec-tag">10×10</span>
+            <span class="spec-tag">25×25</span>
+            <span class="spec-tag">35×35</span>
+            <span class="spec-tag">45×45</span>
+            <span class="spec-tag">55×55 sm</span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="product-card">
+        <div class="product-visual" id="pv3"></div>
+        <div class="product-info">
+          <div class="product-name">2.00m Balandlikdagi To'r</div>
+          <p class="product-desc">Baland xavfsizlik to'ri. Sanoat ob'ektlari, omborlar va maxsus hududlar uchun.</p>
+          <div class="product-specs">
+            <span class="spec-tag">Sim: 1.5 / 2.0 / 2.3 mm</span>
+          </div>
+          <div class="product-specs" style="margin-top:8px">
+            <span class="spec-tag">10×10</span>
+            <span class="spec-tag">25×25</span>
+            <span class="spec-tag">35×35</span>
+            <span class="spec-tag">45×45</span>
+            <span class="spec-tag">55×55 sm</span>
+          </div>
+        </div>
+      </div>
+  
+      <div class="product-card">
+        <div class="product-visual" id="pv4"></div>
+        <div class="product-info">
+          <div class="product-name">Ulgurji Yetkazish</div>
+          <p class="product-desc">Katta hajmdagi buyurtmalar uchun maxsus narxlar. Zavoddan to'g'ridan-to'g'ri, vositachisiz.</p>
+          <div class="product-specs">
+            <span class="spec-tag">Minimal buyurtma yo'q</span>
+          </div>
+          <div class="product-specs" style="margin-top:8px">
+            <span class="spec-tag">O'zbekiston bo'ylab</span>
+          <span class="spec-tag">Eksport</span>
+        </div>
+        <div class="product-specs" style="margin-top:8px">
+          <span class="spec-tag">GOST sertifikat</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="biz-haqimizda">
+  <div class="about-left reveal">
+    <div class="section-tag">✦ Kompaniya</div>
+    <h2 class="section-title">BIZ HAQIMIZDA</h2>
+    <div class="divider"></div>
+    <p class="section-sub">
+      FenceProUz — O'zbekistonda sim to'r ishlab chiqarish sohasida ishonchli hamkor. Zavoddan to'g'ridan-to'g'ri, vositachisiz.
+    </p>
+
+    <div class="about-features">
+      <div class="feature-item">
+        <div class="feature-icon">🏭</div>
+        <div class="feature-text">
+          <h4>Zavod narxlari</h4>
+          <p>Vositachilarsiz bevosita zavoddan sotib oling. Ulgurji narxlar.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🚚</div>
+        <div class="feature-text">
+          <h4>Tezkor yetkazish</h4>
+          <p>O'zbekiston bo'ylab va eksport buyurtmalari uchun o'z vaqtida yetkazish.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-text">
+          <h4>Individual ishlab chiqarish</h4>
+          <p>O'lcham va texnik talablaringizga ko'ra maxsus buyurtma qilingan mahsulotlar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-visual reveal">
+    <div class="about-card">
+      <div class="cert-badge">🏅 GOST Sertifikatlangan Ishlab Chiqarish</div>
+      <div class="about-nums">
+        <div class="about-num-item">
+          <div class="num">10+</div>
+          <div class="lbl">Yillik tajriba</div>
+        </div>
+        <div class="about-num-item">
+          <div class="num">500+</div>
+          <div class="lbl">Bajarilgan loyihalar</div>
+        </div>
+        <div class="about-num-item">
+          <div class="num">2</div>
+          <div class="lbl">Eksport Viloyatlar</div>
+        </div>
+        <div class="about-num-item">
+          <div class="num">24/7</div>
+          <div class="lbl">Mijoz qo'llab-quvvatlash</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="aloqa">
+  <div class="reveal">
+    <div class="section-tag">✦ Murojaat</div>
+    <h2 class="section-title">ALOQA</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="contact-wrapper">
+    <div class="reveal">
+      <p class="section-sub">Buyurtma berish yoki narx so'rash uchun biz bilan bog'laning.</p>
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <h4>Telefon</h4>
+            <p>+998 91 898 27 57</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <h4>Email</h4>
+            <p>info@fenceprouz.uz</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <h4>Manzil</h4>
+            <p>Jizzax viloyati, Paxtakor tumani</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">💬</div>
+          <div>
+            <h4>Telegram</h4>
+            <a href="https://t.me/Hasanov_Jamshid" target="_blank" style="color:rgb(0, 140, 255);text-decoration:none;">@fenceprouz</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form reveal">
+      <div class="form-title">Buyurtma Berish</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ismingiz</label>
+          <input type="text" placeholder="Ism Familiya">
+        </div>
+        <div class="form-group">
+          <label>Telefon</label>
+          <input type="tel" placeholder="+998  _  ">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Mahsulot turi</label>
+        <select>
+          <option value="" disabled selected>Tanlang...</option>
+          <option>1.20m balandlikdagi to'r</option>
+          <option>1.50m balandlikdagi to'r</option>
+          <option>2.00m balandlikdagi to'r</option>
+          <option>Ulgurji buyurtma</option>
+          <option>Boshqa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Xabar</label>
+        <textarea placeholder="Miqdor, o'lcham va boshqa talablaringizni yozing..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="handleSubmit()">Yuborish →</button>
+    </div>
+  </div>
+</section>
+<!-- FOOTER -->
+<footer>
+    <div class="footer-logo">Fence<span>Pro</span>Uz</div>
+    <p>© 2024 FenceProUz. Barcha huquqlar himoyalangan.</p>
+    <p style="color: var(--muted); font-size:13px;">O'zbekiston | Sifat kafolati</p>
+  </footer>
+  
+  <script>
+  // ─── HAMBURGER MENU ───
+  function toggleMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const burger = document.getElementById('hamburger');
+    menu.classList.toggle('open');
+    burger.classList.toggle('active');
+    document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+  }
+  
+  function closeMenu() {
+    const menu = document.getElementById('mobileMenu');
+    const burger = document.getElementById('hamburger');
+    menu.classList.remove('open');
+    burger.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  
+  // ─── MESH CANVAS BACKGROUND ───
+  const canvas = document.getElementById('meshCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  
+  function drawMesh() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cellSize = 40;
+    const cols = Math.ceil(canvas.width / cellSize) + 2;
+    const rows = Math.ceil(canvas.height / cellSize) + 2;
+    const t = Date.now() * 0.0004;
+  
+    ctx.strokeStyle = 'rgba(201,147,58,0.6)';
+    ctx.lineWidth = 0.8;
+  
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        const x = j * cellSize;
+        const y = i * cellSize;
+        const wave = Math.sin(t + i * 0.3 + j * 0.3) * 6;
+  
+        // Diamond pattern
+        ctx.beginPath();
+        ctx.moveTo(x + cellSize/2 + wave, y);
+        ctx.lineTo(x + cellSize, y + cellSize/2);
+        ctx.lineTo(x + cellSize/2 - wave, y + cellSize);
+        ctx.lineTo(x, y + cellSize/2);
+        ctx.closePath();
+        ctx.stroke();
+      }
+    }
+    requestAnimationFrame(drawMesh);
+  }
+  drawMesh();
+  
+  // ─── PRODUCT CARD CANVASES ───
+  function drawProductMesh(canvasId, color) {
+    const container = document.getElementById(canvasId);
+    if (!container) return;
+    const c = document.createElement('canvas');
+    c.width = container.clientWidth || 280;
+    c.height = 180;
+    c.style.position = 'absolute';
+    c.style.top = '0'; c.style.left = '0';
+    c.style.width = '100%'; c.style.height = '100%';
+    container.style.position = 'relative';
+    container.appendChild(c);
+    const cx = c.getContext('2d');
+  
+    function draw() {
+      cx.clearRect(0, 0, c.width, c.height);
+      const cell = 28;
+      const t = Date.now() * 0.0006;
+      cx.strokeStyle = color;
+      cx.lineWidth = 1;
+      const cols = Math.ceil(c.width / cell) + 2;
+      const rows = Math.ceil(c.height / cell) + 2;
+      for (let i = -1; i < rows; i++) {
+        for (let j = -1; j < cols; j++) {
+          const x = j * cell;
+          const y = i * cell;
+          const w = Math.sin(t + i * 0.4 + j * 0.4) * 4;
+          cx.beginPath();
+          cx.moveTo(x + cell/2 + w, y);
+          cx.lineTo(x + cell, y + cell/2);
+          cx.lineTo(x + cell/2 - w, y + cell);
+          cx.lineTo(x, y + cell/2);
+          cx.closePath();
+          cx.stroke();
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+  
+  window.addEventListener('load', () => {
+    drawProductMesh('pv1', 'rgba(201,147,58,0.5)');
+    drawProductMesh('pv2', 'rgba(74,96,128,0.7)');
+    drawProductMesh('pv3', 'rgba(100,160,100,0.5)');
+    drawProductMesh('pv4', 'rgba(180,100,100,0.5)');
+  });
+  
+  // ─── SCROLL REVEAL ───
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  
+  revealEls.forEach(el => observer.observe(el));
+  
+  // ─── FORM SUBMIT ───
+  function handleSubmit() {
+    const btn = document.querySelector('.btn-submit');
+    btn.textContent = '✓ Yuborildi!';
+    btn.style.background = '#4a8a4a';
+    setTimeout(() => {
+      btn.textContent = 'Yuborish →';
+      btn.style.background = '';
+    }, 3000);
+  }
+  // ─── THEME TOGGLE ───
+  function toggleTheme() {
+    document.body.classList.toggle('light');
+    const isLight = document.body.classList.contains('light');
+    document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  }
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeToggle').textContent = '☀️';
+  }
+
+
+  </script>
+  </body>
+  </html>
